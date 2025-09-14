@@ -10,6 +10,7 @@ import { generateToken } from "../../utilts/token.js";
 
 
 
+
 class userService{
 private _userModel = new userRepository (userModel)
 constructor(){}
@@ -65,8 +66,6 @@ if (!await Compare(password,user?.password!)) {
                 option: { expiresIn: "1h" }
         })
 
-
-
         const RefreshToken = await generateToken({
                 payload: { id: user._id, email },
                 signature: user.role == RoleType.user ? process.env.REFRESH_TOKEN_USER! : process.env.REFRESH_TOKEN_ADMIN!,
@@ -76,6 +75,20 @@ if (!await Compare(password,user?.password!)) {
 
 return res.status(201).json({message:"login succssfully",AccessToken,RefreshToken})
 }
+
+  Profile =async(req:Request,res:Response,next:NextFunction)=>{
+
+   console.log("hhhhhhhhhhhhhhhhhhhhhhhhhhh");
+   
+
+   
+    res.status(200).json({message:"success"})
+    return;
+}
+
+
+
+
 
 }
 

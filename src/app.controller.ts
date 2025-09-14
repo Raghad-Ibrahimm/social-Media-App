@@ -1,13 +1,13 @@
-import  { resolve } from "path"
+import cors from "cors"
 import { config } from "dotenv"
-config({path:resolve("./config/.env")})
 import express, { NextFunction, Request, Response } from "express"
-import cors from"cors"
+import { rateLimit } from "express-rate-limit"
 import helmet from "helmet"
-import {rateLimit} from "express-rate-limit"
-import { appErr } from "./utilts/classError.js"
-import userRouter from "./modules/users/user.controller.js"
+import { resolve } from "path"
 import connectionDB from "./DB/connectionDB.js"
+import userController from "./modules/users/user.controller.js"
+import { appErr } from "./utilts/classError.js"
+config({path:resolve("./config/.env")})
 const app:express.Application = express()
 const port:string | number =process.env.PORT || 5000
 
@@ -28,10 +28,10 @@ const bootstrap =async()=>{
 app.use(express.json())
 app.use(cors())
 app.use(helmet())
-app.use(limiter)
+// app.use(limiter)
 await connectionDB()
 
-app.use("/users",userRouter)
+app.use("/users",userController)
 
 
 app.get("",(req:Request,res:Response,next:NextFunction)=>{

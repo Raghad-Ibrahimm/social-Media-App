@@ -1,12 +1,14 @@
 import { Router } from "express";
-import  uS from "./user.service.js";
+import userService  from "./user.service.js";
+import { confirmEmailSchema, signINSchema, signUpSchema } from "./user.validation.js";``
 import { validtion } from "../../middleware/validatore.js";
-import { confirmEmailSchema, signINSchema, signUpSchema } from "./user.validation.js";
+import { Authenticatin } from "../../middleware/Authentcation.js";
 
-const userRouter = Router()
+const userController:Router = Router();
 
-userRouter.post("/signup",validtion(signUpSchema),uS.signUp)
-userRouter.patch("/confirmEmail",validtion(confirmEmailSchema),uS.confirmEmail)
-userRouter.post("/signIn",validtion(signINSchema), uS.signIn)
+userController.post("/signup", validtion(signUpSchema), userService.signUp);
+userController.patch("/confirmEmail", validtion(confirmEmailSchema), userService.confirmEmail);
+userController.post("/signIn", validtion(signINSchema), userService.signIn);
+userController.get("/profile",Authenticatin(),userService.Profile)
 
-export default userRouter
+export default userController;
