@@ -1,11 +1,6 @@
 import mongoose, { Types } from "mongoose";
 
 
-
-
-
-
-
 export enum GenderType{
     male="male",
     female="female"
@@ -14,6 +9,10 @@ export enum GenderType{
 export enum RoleType{
     admin="admin",
     user="user"
+}
+export enum Provider{
+    google="google",
+    system="system"
 }
 
 export interface Iuser {
@@ -28,9 +27,12 @@ export interface Iuser {
     phone?:string,
     address?:string
     role?:RoleType,
+    provider?:Provider,
     otp?:string,
+    image?:string,
     confirmed?:boolean,
     changeCredentials:Date,
+    deletedAt?:Date,
     createdAt:Date,
     updatedAt:Date
 
@@ -40,17 +42,27 @@ const userSchema = new mongoose.Schema<Iuser>({
        fName:{type:String ,required:true,minLength:2,maxLength:10, trim:true},
     lName:{type:String,required:true,minLength:2,maxLength:10,trim:true},
     email:{type:String,required:true,unique:true, trim:true},
-    password:{type:String,required:true},
-    age:{type:Number,minLength:18,maxLength:60,required:true},
+    password:{type:String,required:
+        function (){
+        return this.provider === Provider.google ?false:true
+    }
+},
+    age:{type:Number,minLength:18,maxLength:60,required:        function (){
+        return this.provider === Provider.google ?false:true
+    }},
     gender:{type:String,enum:GenderType,default:GenderType.female},
     phone:{type:String},
+  image:{type:String},
     address:{type:String},
-    role:{type:String ,enum:RoleType,default:RoleType.user},
+   deletedAt:{type:Date},
+    role:{type:String ,enum:RoleType,required:        function (){
+        return this.provider === Provider.google ?false:true
+    }},
+    provider:{type:String ,enum:Provider,default:Provider.system},
     otp:{type:String},
     confirmed:{type:Boolean,default:false},
-    changeCredentials:Date,
-    createdAt:Date,
-    updatedAt:Date,
+    changeCredentials:{type:Date},
+
    
 },{
     timestamps:true,
@@ -63,6 +75,33 @@ userSchema.virtual("fullName").set(function (value) {
 }).get(function (){
     return this.fName + " " + this.lName
 })
+
+userSchema.pre(["findOne","updateOne"],async function () {
+    const query = this.getQuery();
+    const {paranoid,...rest}=query;
+    if (paranoid == false) {
+        this.setQuery({...rest}) //all users with out soft delete user
+    }else{
+        this.setQuery({...rest,deletedAt:{$exists:false}}) // all users with soft delete user
+
+    }
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 const userModel =mongoose.models.User || mongoose.model<Iuser>("User",userSchema) 
