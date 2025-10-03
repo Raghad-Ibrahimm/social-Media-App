@@ -14,7 +14,7 @@ export const Authenticatin = (tokenType:TokenType = TokenType.access )  => {
       }
       const signature = await GetSignature(tokenType, prefix)
       if (!signature) {
-         throw new appErr("Invalid signature", 400)
+         throw new appErr("Invalid signatureee", 400)
       }
 
       const decoded = await decodedTokenAndFetchUser(token, signature)

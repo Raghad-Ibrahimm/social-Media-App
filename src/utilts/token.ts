@@ -2,11 +2,11 @@
 
 import jwt, { JwtPayload } from "jsonwebtoken"
 
-import { appErr } from "./classError.js"
-import { userRepository } from "../DB/repositories/user.repository.js"
-import userModel from "../DB/model/user.model.js"
-import { RevokeTokenRepository } from "../DB/repositories/revokeToken.repository.js"
-import RevokeTokenModel from "../DB/model/revokeToken.model.js"
+import { appErr } from "./classError"
+import { userRepository } from "../DB/repositories/user.repository"
+import userModel from "../DB/model/user.model"
+import { RevokeTokenRepository } from "../DB/repositories/revokeToken.repository"
+import RevokeTokenModel from "../DB/model/revokeToken.model"
 
 export enum TokenType {
     access = "access",
@@ -55,7 +55,7 @@ export const decodedTokenAndFetchUser = async (token: string, signature: string)
     }
 
 
-    const user = await _userModel.findOne({ email: decoded.email, })
+    const user = await _userModel.findOne({ email: decoded?.email, })
 
     if (!user) {
         throw new appErr("User is not exist", 404)

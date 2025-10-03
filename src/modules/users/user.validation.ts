@@ -1,74 +1,101 @@
- import z from "zod"
+import z from "zod"
 import { GenderType, RoleType } from "../../DB/model/user.model.js"
-export enum FlagType{
-    all ="all",
-    current ="current"
+import { Types } from "mongoose"
+export enum FlagType {
+    all = "all",
+    current = "current"
 }
 
-export const signINSchema={
-    body:z.object({
-   
-    email:z.email(),
-    password:z.string().min(3),
-  
-   }).required()
-}
-export const signUpSchema={
-    body:signINSchema.body.extend({
-    fullName:z.string().min(2).max(20).trim(),
-    cPassword:z.string(),
-    gender:z.enum([GenderType.female,GenderType.male]),
-    age:z.number().min(18).max(60),
-    phone:z.string().min(11).max(14),
-    role:z.enum([RoleType.user,RoleType.admin]),
-    address:z.string()
+export const signINSchema = {
+    body: z.object({
 
-   }).required().superRefine((data,ctx)=>{
-    if (data.password!==data.cPassword) {
-        ctx.addIssue({code:"custom",path:["cPassword"],message:"cPassword shoud be match password"})
-    }
-   })
-}
-export const confirmEmailSchema={
-    body:z.strictObject({
-  
-    email:z.email(),
-    otp:z.string().regex(/^\d{6}$/).trim()
+        email: z.email(),
+        password: z.string().min(3),
 
-   }).required()
+    }).required()
 }
-export const logOutSchema={
-    body:z.strictObject({
-      flag:z.enum(FlagType)
+export const signUpSchema = {
+    body: signINSchema.body.extend({
+        fullName: z.string().min(2).max(20).trim(),
+        cPassword: z.string(),
+        gender: z.enum([GenderType.female, GenderType.male]),
+        age: z.number().min(18).max(60),
+        phone: z.string().min(11).max(14),
+        role: z.enum([RoleType.user, RoleType.admin]),
+        address: z.string()
 
-   }).required()
+    }).required().superRefine((data, ctx) => {
+        if (data.password !== data.cPassword) {
+            ctx.addIssue({ code: "custom", path: ["cPassword"], message: "cPassword shoud be match password" })
+        }
+    })
 }
-export const forgetPasswordSchema={
-    body:z.strictObject({
-      email:z.email()
+export const confirmEmailSchema = {
+    body: z.strictObject({
 
-   }).required()
+        email: z.email(),
+        otp: z.string()
+
+    }).required()
+}
+export const logOutSchema = {
+    body: z.strictObject({
+        flag: z.enum(FlagType)
+
+    }).required()
+}
+export const forgetPasswordSchema = {
+    body: z.strictObject({
+        email: z.email()
+
+    }).required()
 }
 
-export const loginWithGmailSchema={
-    body:z.strictObject({
-      idToken:z.string()
+export const loginWithGmailSchema = {
+    body: z.strictObject({
+        idToken: z.string()
 
-   }).required()
+    }).required()
 }
-export const resetPasswordSchema={
-    body:confirmEmailSchema.body.extend({
-    password:z.string().min(3),
-    cPassword:z.string(),
-   }).required().superRefine((value,ctx)=>{
-    if (value.password !== value.cPassword) {
-        ctx.addIssue({
-            code:"custom",
-            path:["cPassword"],
-            message:"password not match"
-        })
-    }
-   })
+export const resetPasswordSchema = {
+    body: confirmEmailSchema.body.extend({
+        password: z.string().min(3),
+        cPassword: z.string(),
+    }).required().superRefine((value, ctx) => {
+        if (value.password !== value.cPassword) {
+            ctx.addIssue({
+                code: "custom",
+                path: ["cPassword"],
+                message: "password not match"
+            })
+        }
+    })
+}
+export const freezeSchema = {
+    params: z.strictObject({
+        userId: z.string().optional(),
+
+    }).refine((value) => {
+
+        return value?.userId ? Types.ObjectId.isValid(value.userId) : true
+
+    }, {
+        message: "userId required",
+        path: ["userId"]
+    })
+}
+export const unFreezedSchema = {
+    params: z.strictObject({
+        userId: z.string().optional(),
+
+    }).required().refine((value) => {
+
+        return value?.userId ? Types.ObjectId.isValid(value.userId) : true
+
+    }, {
+        message: "userId required",
+        path: ["userId"]
+    })
 }
 
 
@@ -79,4 +106,6 @@ export type logOutSchemaType = z.infer<typeof logOutSchema.body>
 export type loginWithGmailSchemaType = z.infer<typeof loginWithGmailSchema.body>
 export type forgetPasswordSchemaType = z.infer<typeof forgetPasswordSchema.body>
 export type resetPasswordSchemaType = z.infer<typeof resetPasswordSchema.body>
+export type freezeSchemaType = z.infer<typeof freezeSchema.params>
+export type unFreezedSchemaType = z.infer<typeof unFreezedSchema.params>
 
