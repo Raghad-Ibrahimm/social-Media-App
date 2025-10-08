@@ -1,5 +1,5 @@
 import { HydratedDocument } from "mongoose";
-import { Iuser } from "../DB/model/user.model.js";
+import { Iuser } from "../DB/model/user.model";
 import { JwtPayload } from "jsonwebtoken";
 
 

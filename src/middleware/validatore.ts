@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express"
 import { ZodType } from "zod"
-import { appErr } from "../utilts/classError.js"
+import { appErr } from "../utilts/classError"
 
 type ReqTypes =keyof Request   //==>  "body" ||"params" || "headers" .........
 type schemaTypes =Partial<Record < ReqTypes , ZodType >>
@@ -13,6 +13,13 @@ export const validtion =(schema:schemaTypes)=>{
 
 
          if (!schema[key]) continue
+
+         if (req?.file) {
+            req.body.attachment =req.file
+         }
+         if (req?.files) {
+            req.body.attachments =req.files
+         }
 
 
         const result = schema[key].safeParse(req[key])

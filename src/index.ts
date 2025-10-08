@@ -1,5 +1,5 @@
 
-import bootstrap from "./app.controller.js";
+import bootstrap from "./app.controller";
 
 ///============================ first way to create uniqe===> OTP third part module=================================
 // import { v4 as uuidv4 } from 'uuid';  

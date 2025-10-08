@@ -1,5 +1,5 @@
 import { Request } from "express";
-import multer, { FileFilterCallback, Multer } from "multer";
+import multer, { FileFilterCallback } from "multer";
 import { appErr } from "../utilts/classError";
 import os from "node:os";
 import { v4 as uuidv4 } from "uuid";

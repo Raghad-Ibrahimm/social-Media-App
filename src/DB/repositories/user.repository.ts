@@ -5,7 +5,7 @@ import { appErr } from "../../utilts/classError.js";
 
 
 export class userRepository extends DbRepository<Iuser> {
-constructor(protected  readonly model:Model<Iuser>){
+constructor(protected override  readonly model:Model<Iuser>){
     super(model)
 }
     async createOneUser(data:Partial<Iuser>):Promise<HydratedDocument<Iuser>>{

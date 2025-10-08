@@ -1,5 +1,5 @@
 import z from "zod"
-import { GenderType, RoleType } from "../../DB/model/user.model.js"
+import { GenderType, RoleType } from "../../DB/model/user.model"
 import { Types } from "mongoose"
 export enum FlagType {
     all = "all",

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express"
-import { appErr } from "../utilts/classError.js"
-import { decodedTokenAndFetchUser, GetSignature, TokenType } from "../utilts/token.js"
+import { appErr } from "../utilts/classError"
+import { decodedTokenAndFetchUser, GetSignature, TokenType } from "../utilts/token"
 
 
 

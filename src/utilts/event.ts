@@ -1,9 +1,9 @@
 import { EventEmitter } from "events"
-import { emailTemplate } from "../service/email.templ.js"
+import { emailTemplate } from "../service/email.templ"
 import { sendEmail } from "../service/sendEmail.js"
-import { deleteFile, getFile } from "./s3.config.js"
-import { userRepository } from "../DB/repositories/user.repository.js"
-import userModel from "../DB/model/user.model.js"
+import { deleteFile, getFile } from "./s3.config"
+import { userRepository } from "../DB/repositories/user.repository"
+import userModel from "../DB/model/user.model"
 
 export const eventEmitter = new EventEmitter()
 eventEmitter.on("confirmEmail", async (data) => {

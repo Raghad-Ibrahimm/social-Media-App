@@ -38,6 +38,7 @@ export interface Iuser {
     restoredAt?:Date,
     restoredBy?:Types.ObjectId,
     changeCredentials:Date,
+    friends?:Types.ObjectId[],
     createdAt:Date,
     updatedAt:Date
 
@@ -57,6 +58,7 @@ const userSchema = new mongoose.Schema<Iuser>({
     }},
     gender:{type:String,enum:GenderType,default:GenderType.female},
     phone:{type:String},
+    friends:[{type:Types.ObjectId,ref:"User"}]
     coverImages:{type:String},
    profileImage:{type:String},
    tempProfileImage:{type:String},

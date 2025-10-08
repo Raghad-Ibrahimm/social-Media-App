@@ -11,6 +11,7 @@ import { pipeline } from "node:stream"
 import { promisify } from "node:util"
 import { createGetFilePerSignesUrl, deleteFile, deleteFiles, getFile, listFiles } from "./utilts/s3.config"
 import { ListObjectsCommandOutput } from "@aws-sdk/client-s3"
+import postRouter from "./modules/post/post.controller"
 config({ path: resolve("./config/.env") })
 const writePipeLine = promisify(pipeline)
 const app: express.Application = express()
@@ -154,6 +155,7 @@ const {downloadName}= req.query as {downloadName:string}
 
 
     app.use("/users", userController)
+    app.use("/posts", postRouter)
 
 
 

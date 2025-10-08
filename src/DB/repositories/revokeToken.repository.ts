@@ -5,7 +5,7 @@ import { Model } from "mongoose";
 
 
 export class RevokeTokenRepository extends DbRepository<IRevokeToken> {
-  constructor(protected  model:Model<IRevokeToken>) {
+  constructor(protected override  model:Model<IRevokeToken>) {
     super(model)
   }
 }

@@ -1,20 +1,15 @@
 
-import { model, models, Schema, Types } from "mongoose";
+import {  model, models, Schema } from "mongoose";
 
 
-export enum allowCommentEnum{
-    allow ="allow",
-  deny="deny"
+export enum onModelEnum {
+    Post = "Post",
+    Comment ="Comment"
 }
-export enum AvailabilityEnum{
-    public ="public",
-  private ="private",
-  friends ="friends"
-}
+ 
 
 
-
-export interface Ipost{
+export interface Icomment{
     content?: string,
     attachments?:string[],
     assetFolderId?:string,
@@ -22,13 +17,10 @@ export interface Ipost{
     tags:Schema.Types.ObjectId[],
     likes:Schema.Types.ObjectId[],
 
-    allowComment:allowCommentEnum,
-    availability:AvailabilityEnum,
-    
-
     deletedAt?:Date,
     deletedBy?:Schema.Types.ObjectId,
-
+    refId:Schema.Types.ObjectId,
+  onModel:onModelEnum,
     restoreAt?:Date,
     restoreBy?:Schema.Types.ObjectId,
 
@@ -40,7 +32,7 @@ export interface Ipost{
 
 
 
-export const postSchema =new Schema<Ipost>({
+export const commentSchema =new Schema<Icomment>({
     content: {type: String,minLength:5,maxLength:10000,required:function(){return this.attachments?.length === 0}},
     attachments:[String],
     assetFolderId:String,
@@ -50,12 +42,12 @@ export const postSchema =new Schema<Ipost>({
     tags:[{type:Schema.Types.ObjectId,ref:"User"}],
     likes:[{type:Schema.Types.ObjectId,ref:"User"}],
 
-    allowComment:{type:String,enum:allowCommentEnum,default:allowCommentEnum.allow},
-    availability:{type:String,enum:AvailabilityEnum,default:AvailabilityEnum.public},
-
+   
     deletedAt:{type:Date},
     deletedBy:{type:Schema.Types.ObjectId,ref:"User"},
-
+    refId:{type:Schema.Types.ObjectId,refPath:"onModel",required:true},
+    // commentId:{type:Schema.Types.ObjectId,ref:"Comment"},
+    onModel:{type:String,enum:onModelEnum  , require:true},
     restoreAt:{type:Date},
     restoreBy:{type:Schema.Types.ObjectId,ref:"User"},
     
@@ -73,7 +65,7 @@ export const postSchema =new Schema<Ipost>({
 
 
 
-postSchema.pre(["findOne","find","findOneAndDelete","findOneAndUpdate"],function (next){
+commentSchema.pre(["findOne","find","findOneAndDelete","findOneAndUpdate"],function (next){
     const query = this.getQuery()
     const {paranoid,...rest}=query
     if (paranoid===false) {
@@ -89,7 +81,11 @@ postSchema.pre(["findOne","find","findOneAndDelete","findOneAndUpdate"],function
 
 
 
-postSchema.virtual("Comments",{
+
+
+
+
+commentSchema.virtual("replies",{
     ref:"Comment",
     localField:"_id",
     foreignField:"postId"
@@ -102,6 +98,5 @@ postSchema.virtual("Comments",{
 
 
 
-
-const postModel = models.Post || model("Post",postSchema)
-export default postModel
+const commentModel = models.Comment || model("Comment",commentSchema)
+export default commentModel
