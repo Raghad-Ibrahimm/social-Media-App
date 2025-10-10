@@ -5,6 +5,8 @@ import { validtion } from "../../middleware/validatore";
 import { Authenticatin } from "../../middleware/Authentcation";
 import { TokenType } from "../../utilts/token";
 import { fileValidation, multerCloud } from "../../middleware/multer.cloud";
+import { Authorization } from "../../middleware/Authorization";
+import { RoleType } from "../../DB/model/user.model";
 
 const userController:Router = Router();
 
@@ -30,5 +32,12 @@ userController.post("/uploadfiles",Authenticatin(),
 userController.post("/uploadSingleImage",Authenticatin(),
     multerCloud({fileTypes:fileValidation.image}).single("file")
     ,userService.uploadSingleImage)
+
+ userController.get("/dashboard",Authenticatin(),Authorization({accessRoles:[RoleType.superAdmin,RoleType.admin]}),userService.dashboard)
+ userController.patch("/updateRole/:userId",Authenticatin(),Authorization({accessRoles:[RoleType.superAdmin,RoleType.admin]}),userService.updateRole)
+ userController.post("/addfriend/:userId",Authenticatin(),userService.sendRequest)
+ userController.patch("/acceptRequest/:requestId",Authenticatin(),userService.acceptRequest)
+ userController.delete("/unAcceptRequest/:requestId",Authenticatin(),userService.UnAcceptRequest)
+
 
 export default userController;

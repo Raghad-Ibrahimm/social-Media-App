@@ -8,7 +8,8 @@ export enum GenderType{
 
 export enum RoleType{
     admin="admin",
-    user="user"
+    user="user",
+    superAdmin="superAdmin"
 }
 export enum Provider{
     google="google",
@@ -58,7 +59,7 @@ const userSchema = new mongoose.Schema<Iuser>({
     }},
     gender:{type:String,enum:GenderType,default:GenderType.female},
     phone:{type:String},
-    friends:[{type:Types.ObjectId,ref:"User"}]
+    friends:[{type:Types.ObjectId,ref:"User"}],
     coverImages:{type:String},
    profileImage:{type:String},
    tempProfileImage:{type:String},

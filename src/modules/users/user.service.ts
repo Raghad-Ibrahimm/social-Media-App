@@ -12,6 +12,11 @@ import { RevokeTokenRepository } from "../../DB/repositories/revokeToken.reposit
 import RevokeTokenModel from "../../DB/model/revokeToken.model";
 import { OAuth2Client, TokenPayload } from "google-auth-library";
 import { createUploadFilePerSignedUrl, uploadFile, uploadFiles } from "../../utilts/s3.config";
+import { PostRepository } from "../../DB/repositories/post.repository";
+import postModel from "../../DB/model/post.model";
+import friendRequestModel from "../../DB/model/friendRequest.model";
+import { friendRequestRepository } from "../../DB/repositories/friendRequest.repository";
+import { Types } from "mongoose";
 
 
 
@@ -19,6 +24,9 @@ import { createUploadFilePerSignedUrl, uploadFile, uploadFiles } from "../../uti
 
 class userService {
   private _userModel = new userRepository(userModel)
+  private _postModel = new PostRepository(postModel)
+  private _friendRequestModel = new friendRequestRepository(friendRequestModel)
+
   private _revokeToken = new RevokeTokenRepository(RevokeTokenModel)
   constructor() { }
   //===================sign up ============
@@ -152,7 +160,7 @@ class userService {
       user = await this._userModel.create({
         fullName: name!,
         email: email!,
-        image: picture!,
+        profileImage: picture!,
         confirmed: email_verified!,
         password: uuidv4(),
         provider: Provider.google
@@ -287,7 +295,7 @@ class userService {
       throw new appErr("unauthorized", 401)
     }
     const user = await this._userModel.findOneAndUpdate(
-      { _id: userId || req?.user?._id ,deletedAt:{$exists:false}},
+      { _id: userId || req?.user?._id, deletedAt: { $exists: false } },
       { deletedAt: new Date(), deletedBy: req?.user?._id, changeCredentials: new Date() })
     if (!user) {
       throw new appErr("User not found", 404)
@@ -303,15 +311,16 @@ class userService {
       throw new appErr("unauthorized", 401)
     }
     const user = await this._userModel.findOneAndUpdate(
-      { _id: userId ,
-        deletedAt:{$exists:true},
-       deletedBy:{$ne:userId}
-    },
-      { 
-        $unset:{deletedAt:"",deletedBy:""},
-        restoredAt:new Date(),
-        restoredBy:req.user?._id
-       })
+      {
+        _id: userId,
+        deletedAt: { $exists: true },
+        deletedBy: { $ne: userId }
+      },
+      {
+        $unset: { deletedAt: "", deletedBy: "" },
+        restoredAt: new Date(),
+        restoredBy: req.user?._id
+      })
     if (!user) {
       throw new appErr("User not found", 404)
 
@@ -319,6 +328,143 @@ class userService {
     return res.status(200).json({ message: "unFreezed successfull" })
 
   }
+  dashboard = async (req: Request, res: Response, next: NextFunction) => {
+    const results = await Promise.allSettled([
+      this._postModel.find({ filter: {} }),
+      this._userModel.find({ filter: {} })
+    ])
+
+    return res.status(200).json({ message: "success", results })
+  }
+  updateRole = async (req: Request, res: Response, next: NextFunction) => {
+    const { userId } = req.params
+    const { role: newRole } = req.body
+
+
+
+    const denyRoles: RoleType[] = [newRole, RoleType.superAdmin]
+    if (req?.user?.role == RoleType.admin) {
+      denyRoles.push(RoleType.admin)
+      if (newRole == RoleType.superAdmin) {
+        denyRoles.push(RoleType.user)
+
+      }
+    }
+
+
+    console.log({ denyRoles });
+
+    const user = await this._userModel.findOneAndUpdate(
+      {
+        _id: userId,
+        role: { $nin: denyRoles }
+      },
+      {
+
+        role: newRole
+
+      }, {
+      new: true
+    }
+    )
+
+    if (!user) {
+      throw new appErr("User not found", 404)
+    }
+
+    return res.status(200).json({ message: "success", user })
+  }
+
+
+
+
+
+
+
+
+
+
+
+  sendRequest = async (req: Request, res: Response, next: NextFunction) => {
+    const { userId } = req.params
+
+
+    const user = await this._userModel.findOne({ _id: userId })
+
+    if (!user) {
+      throw new appErr("User not found", 404)
+    }
+if (req.user?._id == userId) {
+     throw new appErr("You can not send request to your self", 400)
+
+}
+
+    const checkRequest = await this._friendRequestModel.findOne({
+      createdBy: { $in: [req.user?._id , userId] },
+      sendTo: { $in: [req?.user?._id, userId] }
+    })
+
+    if (checkRequest) {
+      throw new appErr("Request already sent", 400)
+    }
+
+    const friendRequest = await this._friendRequestModel.create({
+      createdBy: req.user?._id as unknown as Types.ObjectId,
+      sendTo: userId as unknown as Types.ObjectId
+    })
+ 
+    return res.status(201).json({ message: "success", friendRequest })
+  }
+  acceptRequest = async (req: Request, res: Response, next: NextFunction) => {
+    const { requestId } = req.params
+
+
+    const checkRequest = await this._friendRequestModel.findOneAndUpdate({
+      _id :requestId,
+      sendTo:req.user?._id,
+      acceptedAt:{$exists:false}
+    },{
+      acceptedAt:new Date()
+    })
+
+    if (!checkRequest) {
+      throw new appErr("Request not found Or already eccepted", 400)
+    }
+
+  await Promise.all([
+    this._userModel.updateOne({_id:checkRequest.createdBy},{$push:{friends:checkRequest.sendTo}})
+    this._userModel.updateOne({_id:checkRequest.sendTo},{$push:{friends:checkRequest.createdBy}})
+  ])
+
+
+
+    return res.status(201).json({ message: "Request accepted successful", data:checkRequest })
+  }
+  UnAcceptRequest = async (req: Request, res: Response, next: NextFunction) => {
+    
+    
+    const { requestId } = req.params
+    const checkRequest = await this._friendRequestModel.deleteOne({
+      _id :requestId,
+   } )
+
+    if (!checkRequest) {
+      throw new appErr("Request not found Or already deleted", 400)
+    }
+
+    
+
+
+
+
+ 
+
+
+    return res.status(201).json({ message: "Request deleted successful", })
+  }
+
+
+
 
 
 

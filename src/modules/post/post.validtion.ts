@@ -39,14 +39,6 @@ export const createPostSchema ={
 
 
 
-
-
-
-
-
-
-
-
 export const updatePostSchema ={
     body:z.strictObject({
       content :z.string().min(5).max(10000).optional(),

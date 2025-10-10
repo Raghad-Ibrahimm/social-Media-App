@@ -31,7 +31,11 @@ class CommentService {
 
 
 
-    if (commentId || onModel == onModelEnum.Comment) {
+    if ( onModel === onModelEnum.Comment) {
+      if (!commentId) {
+        throw new appErr("CommentId is requird", 400)
+        
+      }
 
       const comment = await this._commentModel.findOne({
         _id: commentId,
@@ -52,7 +56,11 @@ class CommentService {
       }
 
       doc =comment
-    } else if (onModel == onModelEnum.Post) {
+    } else if (onModel === onModelEnum.Post) {
+       if (commentId) {
+        throw new appErr("CommentId is not allowed", 400)
+        
+      }
       const post = await this._postModel.findOne({
         _id: postId,
         allowComment: allowCommentEnum.allow,
@@ -100,6 +108,48 @@ doc =post
 
     return res.status(201).json({ message: "successfully", comment })
   }
+//  updateComments = async (req: Request, res: Response, next: NextFunction) => {
+
+//     const { commentId } = req.params 
+
+
+//     const comment = await this._commentModel.findOne(
+//       {
+//         _id: commentId,
+//         createdBy: req.user?._id,
+//       })
+
+
+//     if (!comment) {
+//       throw new appErr("Faild to update comment or unAuthorized", 404)
+//     }
+
+//     if (req?.body?.content) {
+//       comment.content = req?.body?.content
+//     }
+
+//     if (req?.files?.length) {
+//       await deleteFiles({ urls: comment.attachments || [] })
+//       comment.attachments = await uploadFiles({
+//         files: req?.files as unknown as Express.Multer.File[],
+//         path: `users/${req?.user?._id}/comments/${comment.assetFolderId}`
+//       })
+//     }
+
+//     if (req?.body?.tags?.length) {
+//       if (req?.body?.tags?.length &&
+//         (await this._userModel.find({ _id: { $in: req?.body?.tags } })).length !== req?.body?.tags?.length
+//       ) {
+//         throw new appErr("inValid user iid", 400)
+//       }
+//       comment.tags = req.body.tags
+//     }
+
+//     await comment.save()
+
+
+//     return res.status(201).json({ message: "updated successful", comment })
+//   }
 
 
 

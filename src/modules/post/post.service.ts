@@ -8,7 +8,6 @@ import { deleteFiles, uploadFiles } from "../../utilts/s3.config";
 import { v4 as uuidv4 } from 'uuid';
 import { Action, likePostQuery, likePostSchemaType } from "./post.validtion";
 import { UpdateQuery } from "mongoose";
-import { readonly, unknown } from "zod";
 
 
 
@@ -95,13 +94,6 @@ class PostService {
     return res.status(201).json({ message: "like successfully", post })
   }
 
-
-
-
-
-
-
-
   updatePost = async (req: Request, res: Response, next: NextFunction) => {
 
     const { postId }: likePostSchemaType = req.params as likePostSchemaType
@@ -152,7 +144,6 @@ class PostService {
     return res.status(201).json({ message: "updated successful", post })
   }
 
-
   getAllPosts = async (req: Request, res: Response, next: NextFunction) => {
     let { page = 1, limit = 5 } = req.query as unknown as { page: number, limit: number }
 
@@ -186,6 +177,59 @@ class PostService {
   }
 
 
+   freezepost = async (req: Request, res: Response, next: NextFunction) => {
+      const { postId } = req.params
+  
+
+
+
+           const post = await this._postModel.findOneAndUpdate(
+        { _id: postId,
+         deletedAt: { $exists: false } ,
+         createdBy:req?.user?._id}
+         
+         ,{
+          deletedAt:new Date(),
+          deletedBy:req.user?._id
+         }
+         ,{
+          new:true
+         }
+      )
+
+
+    if (!post) {
+        throw new appErr("Post not found or already freeazd Or not authorized", 404)
+      }
+
+
+      return res.status(200).json({ message: "Freezed",post })
+  
+    }
+  unFreezedPost = async (req: Request, res: Response, next: NextFunction) => {
+    const { postId } = req.params
+
+ 
+    const post = await this._postModel.findOneAndUpdate(
+      {
+        _id: postId,
+        paranoid:false,
+        deletedAt: { $exists: true },
+        deletedBy: { $eq: req.user?._id }
+      },
+      {
+        $unset: { deletedAt: "", deletedBy: "" },
+        restoredAt: new Date(),
+        restoredBy: req.user?._id
+      }
+    )
+    if (!post) {
+      throw new appErr("post not found", 404)
+
+    }
+    return res.status(200).json({ message: "unFreezed successfully",post })
+
+  }
 
 
 

@@ -14,6 +14,5 @@ const commentRouter: Router = Router({mergeParams:true})
  ,multerCloud({fileTypes:fileValidation.image}).array("attachments",2),
  validtion(CV.createCommentSchema),
  CS.createComment)
-
  
 export default commentRouter

@@ -24,5 +24,7 @@ validtion(PV.createPostSchema),
 
  postRouter.get("/get/posts",pS.getAllPosts)
  postRouter.get("/getPostsWithComments",pS.getAllPostsWithComments)
+ postRouter.patch("/freezedpost/:postId",Authenticatin(),pS.freezepost)
+ postRouter.patch("/unFreezedpost/:postId",Authenticatin(),pS.unFreezedPost)
 
 export default postRouter
